@@ -15,7 +15,7 @@ db.get("PRAGMA foreign_keys = ON");
 // Middlewares
 
 // body parser
-app.use(express.json()) 
+app.use(express.json())
 
 //CORS 
 app.use((req, res, next) => {
@@ -36,37 +36,77 @@ app.get('/', (req, res) => {
 app.post('/register', (req, res) => {
     // capture arguments
     const { admin_name, email, title } = req.body
-    
+
     // check whether admin already exists in db
     db.get(`SELECT admin_id FROM ADMIN WHERE email = (?)`, [email], (err, data) => {
-        
-      if (err) {
-        res.status(400).send("USER ALREADY EXISTS")
-      }
 
-      else {
+        if (err) {
+            res.status(400).send("USER ALREADY EXISTS")
+        }
 
-        // if admin does not exist in db, add admin to db
-        if (data === undefined) {
-          db.run(`INSERT INTO ADMIN (admin_name, email, title) VALUES (?,?,?)`, [admin_name, email, title], (err) => {
-            if (err) {
-              res.status(500).send("ERROR WHILE INSERTING, PLEASE TRY AGAIN!")
+        else {
+
+            // if admin does not exist in db, add admin to db
+            if (data === undefined) {
+                db.run(`INSERT INTO ADMIN (admin_name, email, title) VALUES (?,?,?)`, [admin_name, email, title], (err) => {
+                    if (err) {
+                        res.status(500).send("ERROR WHILE INSERTING, PLEASE TRY AGAIN!")
+                    }
+                    else {
+                        res.status(200).send("ADMIN SUCCESSFULLY ADDED!")
+                    }
+                });
             }
             else {
-              res.status(200).send("ADMIN SUCCESSFULLY ADDED!")
+                res.status(400).send(`USER ALREADY EXISTS`)
             }
-          });
         }
-        else {
-          res.status(400).send(`USER ALREADY EXISTS`)
-        }
-      }
     });
-  })
+})
 
 // Send email, name
 app.post('/add-topics', (req, res) => {
-    res.json({ info: 'add-topics endpoint' })
+    
+    // capture arguments
+    const { email, name } = req.body
+
+    // check whether admin exists in db
+    db.get(`SELECT admin_id FROM ADMIN WHERE email = (?)`, [email], (err, data) => {
+        if (err) {
+            res.status(500).send("UNEXPECTED ERROR, TRY AGAIN PLEASE")
+        }
+        else {
+            if (data === undefined) {
+                res.status(401).send("UNAUTHORIZED ACCESS, REGISTER FIRST!")
+            }
+            else {
+
+                // check if (topic,admin) already exists in db
+                db.get(`SELECT topic_id FROM TOPICS WHERE admin_id=(?) AND name=(?)`, [data.admin_id, name], (err, res_data) => {
+                    if (err) {
+                        res.status(500).send("UNEXPECTED ERROR, TRY AGAIN PLEASE")
+                    }
+                    else {
+                        if (res_data === undefined) {
+
+                            // insert (topic, admin_id) into db
+                            db.run(`INSERT INTO TOPICS (name, admin_id) VALUES (?,?)`, [name, data.admin_id], (err) => {
+                                if (err) {
+                                    res.status(500).send("ERROR WHILE INSERTING, PLEASE TRY AGAIN!")
+                                }
+                                else {
+                                    res.status(200).send(`TOPIC ${name} ADDED SUCCESSFULLY FOR USER ${email}`)
+                                }
+                            });
+                        }
+                        else {
+                            res.status(400).send(`TOPIC ${name} ALREADY EXISTS FOR USER ${email}`)
+                        }
+                    }
+                })
+            }
+        }
+    });
 })
 
 // Send publish_time, content_data, topic_id, email
@@ -76,7 +116,7 @@ app.post('/add-content', (req, res) => {
 
 // Client's endpoint -> takes sub_email, topic
 app.post('/:newsletter/subscribe', (req, res) => {
-    const {newsletter} = req.params
+    const { newsletter } = req.params
     res.json({ info: `subscribe newsletter(${newsletter}) endpoint` })
 })
 

@@ -34,8 +34,35 @@ app.get('/', (req, res) => {
 
 // Send admin_name, email, title 
 app.post('/register', (req, res) => {
-    res.json({ info: 'register endpoint' })
-})
+    // capture arguments
+    const { admin_name, email, title } = req.body
+    
+    // check whether admin already exists in db
+    db.get(`SELECT admin_id FROM ADMIN WHERE email = (?)`, [email], (err, data) => {
+        
+      if (err) {
+        res.status(400).send("USER ALREADY EXISTS")
+      }
+
+      else {
+
+        // if admin does not exist in db, add admin to db
+        if (data === undefined) {
+          db.run(`INSERT INTO ADMIN (admin_name, email, title) VALUES (?,?,?)`, [admin_name, email, title], (err) => {
+            if (err) {
+              res.status(500).send("ERROR WHILE INSERTING, PLEASE TRY AGAIN!")
+            }
+            else {
+              res.status(200).send("ADMIN SUCCESSFULLY ADDED!")
+            }
+          });
+        }
+        else {
+          res.status(400).send(`USER ALREADY EXISTS`)
+        }
+      }
+    });
+  })
 
 // Send email, name
 app.post('/add-topics', (req, res) => {

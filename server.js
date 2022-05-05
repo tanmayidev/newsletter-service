@@ -66,7 +66,7 @@ app.post('/register', (req, res) => {
 
 // Send email, name
 app.post('/add-topics', (req, res) => {
-    
+
     // capture arguments
     const { email, name } = req.body
 
@@ -110,9 +110,42 @@ app.post('/add-topics', (req, res) => {
 })
 
 // Send publish_time, content_data, topic_id, email
+// publish_time format: String(YYYY,MM,DD,Hrs,Min,Secs) -> "2022,4,6,12,45,15"
+// Month is 0 indexed (Jan == 0)
 app.post('/add-content', (req, res) => {
-    res.json({ info: 'add-content endpoint' })
-})
+
+    // capture arguments
+    const { publish_time, content_data, topic_id, email } = req.body
+
+    // check if admin exists in db
+    db.get(`SELECT admin_id FROM ADMIN WHERE email = (?)`, [email], (err, data) => {
+        if (err) {
+            res.status(500).send("UNEXPECTED ERROR, TRY AGAIN PLEASE")
+        }
+        else {
+            if (data === undefined) {
+                res.status(401).send("UNAUTHORIZED ACCESS, REGISTER FIRST!")
+            }
+            else {
+
+                // insert content into db
+                db.run(`INSERT INTO CONTENT (publish_time, content_data, topic_id) VALUES (?,?,?)`, [publish_time, content_data, topic_id], (err) => {
+                    if (err) {
+                        res.status(500).send("ERROR WHILE INSERTING, PLEASE TRY AGAIN!")
+                    }
+                    else {
+                        res.status(200).json({
+                            content: content_data,
+                            publish_time: publish_time,
+                            Admin_email: email,
+                            result: "SUCCESSFULL INSERTION"
+                        })
+                    }
+                })
+            }
+        }
+    })
+});
 
 // Client's endpoint -> takes sub_email, topic
 app.post('/:newsletter/subscribe', (req, res) => {

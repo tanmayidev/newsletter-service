@@ -18,7 +18,7 @@ A Client creates a newsletter with several topics. Users subscribe to these News
 
 # Design of the Database
 
-![Database Design](./images/database-design.png
+![Database Design](./images/database-design.png)
 
 
 # Test Environment

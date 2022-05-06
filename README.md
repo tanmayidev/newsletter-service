@@ -38,7 +38,7 @@ A Client creates a newsletter with several topics. Users subscribe to these News
 * Run `npm run begin` to start the local server
 * Load `http://localhost:1337` to test the endpoint. It will display a json result `{"info":"Nothing to server here."}`
 
-* Add valid email id and password in .env file
+* Add valid email id and password in `.env file`
 ```
 USERNAME=user@gmail.com
 PASSWORD=password
@@ -51,6 +51,7 @@ PASSWORD=password
 # API Endpoints
 
 ## API Calls should be made in the following order
+### For complete set of post requests to test [Click here](./test-post-requests.md)
 
 ## POST /register
 
@@ -81,10 +82,10 @@ PASSWORD=password
 
 ## POST /add-content
 
-* **publish_time:** Schedule time (format : "YYYY,MM,DD,hh,mm,ss")
+* **publish_time:** Schedule time (format : "YYYY,MM,DD,hh,mm,ss") and Month is 0 indexed (January = 0, February = 1, ......, December = 11)
 * **content_data:** Data to be sent
 * **topic_id:** Integer referenced in TOPICS table of database
-* **email:** EMail Id of the admin corresponding to Newsletter 
+* **email:** Email Id of the admin corresponding to Newsletter 
 
 ```
 {
@@ -94,8 +95,6 @@ PASSWORD=password
     "email":"admin1@email.com"
 }
 ```
-
-![Postman example](https://developerhowto.com/wp-content/uploads/2018/12/PostMan-POST-request.png)
 
 ## POST /:newsletter/subscribe
 

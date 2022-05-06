@@ -1,6 +1,7 @@
 # Newsletter Service
 
-Newsletter 
+Newsletter is Software Service. It is generally used for Marketing purposes and for Professional Blogs.
+A Client creates a newsletter with several topics. Users subscribe to these Newsletter and get emails periodically.
 
 # Inference from Problem Statement
 

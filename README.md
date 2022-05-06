@@ -1,4 +1,6 @@
-# newsletter-service
+# Newsletter Service
+
+Newsletter 
 
 # Inference from Problem Statement
 
@@ -15,9 +17,7 @@
 
 # Design of the Database
 
-![Database Design](./images/database-design.png)
-
-![Database Schema](./images/database_schema.jpeg)
+![Database Design](./images/database-design.png
 
 
 # Test Environment
@@ -27,7 +27,7 @@
 * DB Console
 * POSTMAN
 
-# Usage
+# Setup / Usage
 
 * Run `npm install` to installl dependencies
   * express
@@ -48,6 +48,8 @@ PASSWORD=password
 ![](./images/google-security.jpeg)
 
 # API Endpoints
+
+## API Calls should be made in the following order
 
 ## POST /register
 
@@ -130,6 +132,15 @@ PASSWORD=password
 
 ![Database Design](./images/new-database-design.png)
 
+# References
+
+* [Node.js](https://nodejs.org/en/docs/)
+* [Express.js](https://expressjs.com/en/5x/api.html)
+* [nodemailer](https://nodemailer.com/about/)
+* [node-schedule](https://www.npmjs.com/package/node-schedule)
+* [sqlite3](https://www.sqlite.org/lang.html)
+* [DB Browser](https://sqlitebrowser.org/)
+* [Postman](https://learning.postman.com/docs/getting-started/introduction/)
 
 
 

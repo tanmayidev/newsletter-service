@@ -1,7 +1,18 @@
 const express = require('express')
 const app = express()
 const sqlite3 = require('sqlite3').verbose()
+const schedule = require('node-schedule')
+const nodemailer = require('nodemailer')
 require("dotenv").config()
+
+// Configure nodemailer
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.USER_ID,
+      pass: process.env.PASSWORD
+    }
+  });
 
 // Connecting to Database
 const db = new sqlite3.Database('./database.db', (err) => {
@@ -149,8 +160,72 @@ app.post('/add-content', (req, res) => {
 
 // Client's endpoint -> takes sub_email, topic
 app.post('/:newsletter/subscribe', (req, res) => {
+
+    // capture url arguments
     const { newsletter } = req.params
-    res.json({ info: `subscribe newsletter(${newsletter}) endpoint` })
+
+    // capture arguments
+    const { sub_email, topic } = req.body
+
+    db.get(`SELECT admin_id FROM ADMIN WHERE title = (?)`, [newsletter], (err, admin) => {
+        if (err) res.status(500).send("ERROR PLEASE TRY AGAIN!");
+        else {
+            if (admin !== undefined) {
+
+                // insert the subscriber email and their chosen topic into the db
+                db.run(`INSERT INTO SUBSCRIBER (sub_email, topic, admin_id) VALUES (?,?,?)`, [sub_email, topic, admin.admin_id], (err) => {
+                    if (err) {
+                        res.status(500).send("ERROR WHILE INSERTING, PLEASE TRY AGAIN!")
+                    }
+                    else {
+
+                        // select the scheduled time, data for the chosen topic by subscriber from db
+                        // create and schedule a mail to be sent at specified time
+                        db.all(`select distinct publish_time, content_data from content WHERE topic_id IN (SELECT topic_id from topics where name == (?))`,
+                            [topic], (err, rows) => {
+                                if (err) {
+                                    res.status(500).send("ERROR PLEASE TRY AGAIN!")
+                                }
+                                else {
+                                    rows.forEach(async (row) => {
+
+                                        // capture the row from db 
+                                        const { publish_time, content_data } = row
+                                        const [year, month, day, hour, min, sec] = publish_time.split(",")
+
+                                        // capture date-time to be used by scheduler
+                                        const date = new Date(year, month, day, hour, min, sec)
+
+                                        // mailOptions are created, email is sent by userid specified env file
+                                        const mailOptions = {
+                                            from: process.env.USER_ID,
+                                            to: sub_email,
+                                            subject: `NEWSLETTER - TOPIC: ${topic}`,
+                                            text: content_data
+                                        };
+
+                                        // node-schedule package is used to schedule jobs at specified date-time
+                                        const SCHEDULE = schedule.scheduleJob(date, () => {
+
+                                            // nodemailer is used to sendMail to specified user/subscriber
+                                            transporter.sendMail(mailOptions, (error, info) => {
+                                                if (error) {
+                                                    console.log(error);
+                                                }
+                                                else {
+                                                    console.log(info);
+                                                }
+                                            });
+                                        })
+                                    })
+                                }
+                            })
+                        res.status(200).send(`NEWLETTER SCHEDULED FOR USER: ${sub_email} AND TOPIC: ${topic}`)
+                    }
+                })
+            }
+        }
+    })
 })
 
 
